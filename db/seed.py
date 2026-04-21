@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from sqlmodel import Session, select
 
-from db.models import Assignment, Bus, Line, User
+from db.models import Assignment, Bus, CrowdReport, Line, ShiftNote, User
 from db.session import ENGINE
 
 
@@ -63,4 +63,42 @@ def seed_all() -> None:
                     shift_date=today,
                 )
             )
+        s.commit()
+
+        # Reportes crowd frescos para que el radar tenga algo al arrancar.
+        now = datetime.utcnow()
+        crowd_samples = [
+            ("obstacle", 40.4200, -3.7053, "Bache profundo carril derecho", "media", 60),
+            ("jam", 40.4074, -3.6916, "Retención 15 min — obras túnel", "alta", 30),
+            ("protest", 40.4168, -3.7038, "Concentración autorizada Sol", "media", 180),
+            ("construction", 40.4672, -3.6892, "Obra nueva acera — chaflán reducido", "baja", 4320),
+            ("aggression", 40.4193, -3.6932, "Discusión fuerte entre pasajeros", "alta", 120),
+        ]
+        for i, (cat, lat, lon, note, sev, ttl_min) in enumerate(crowd_samples):
+            s.add(
+                CrowdReport(
+                    reporter_id=driver_ids[i % len(driver_ids)],
+                    line_id=line_ids[i % len(line_ids)],
+                    category=cat,
+                    lat=lat,
+                    lon=lon,
+                    note=note,
+                    severity=sev,
+                    created_at=now - timedelta(minutes=5 * i),
+                    expires_at=now + timedelta(minutes=ttl_min),
+                    confirmations=i % 3,
+                )
+            )
+
+        # Handoff de ejemplo para el primer bus.
+        s.add(
+            ShiftNote(
+                bus_id=bus_ids[0],
+                author_id=driver_ids[-1],
+                body=(
+                    "Piloto de aire acondicionado parpadea intermitente. "
+                    "Taller ya avisado, revisar al terminar turno."
+                ),
+            )
+        )
         s.commit()

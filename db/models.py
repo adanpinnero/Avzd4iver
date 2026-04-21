@@ -51,3 +51,39 @@ class Incident(SQLModel, table=True):
     ai_protocol: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     status: str = "open"
+    severity: str = "normal"  # "normal" | "critical" (pánico)
+    kind: str = "incident"    # "incident" | "panic"
+
+
+class CrowdReport(SQLModel, table=True):
+    """Reporte rápido conductor→conductor (crowdsourced).
+
+    Se expira automáticamente: active=False cuando `datetime.utcnow() >= expires_at`.
+    Confirmations suma +1 cuando otro conductor lo confirma; downvotes −1 si lo descarta.
+    """
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    reporter_id: int = Field(foreign_key="user.id")
+    line_id: Optional[int] = Field(default=None, foreign_key="line.id")
+    category: str  # bump | obstacle | jam | protest | aggression | accident | construction
+    lat: float
+    lon: float
+    note: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: datetime
+    severity: str = "media"  # baja | media | alta
+    confirmations: int = 0
+    downvotes: int = 0
+    status: str = "active"  # active | expired | dismissed
+
+
+class ShiftNote(SQLModel, table=True):
+    """Handoff breve entre conductores del mismo bus."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    bus_id: int = Field(foreign_key="bus.id")
+    author_id: int = Field(foreign_key="user.id")
+    body: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    acknowledged_by: Optional[int] = Field(default=None, foreign_key="user.id")
+    acknowledged_at: Optional[datetime] = None
