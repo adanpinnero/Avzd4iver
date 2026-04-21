@@ -33,12 +33,13 @@ else:
     if user.role == "driver":
         st.markdown(
             "Usa el menú lateral para acceder a:\n"
-            "- **Driver Turno**: genera tu plan diario.\n"
+            "- **Driver Turno**: plan diario con briefing hablado y handoff.\n"
+            "- **Driver Asistente**: radar crowd, voz, protocolos guiados y pánico.\n"
             "- **Driver Incidencia**: reporta una incidencia con asistencia IA."
         )
     else:
         st.markdown(
             "Usa el menú lateral para acceder a:\n"
             "- **Admin Asignaciones**: gestiona asignaciones conductor/bus/línea.\n"
-            "- **Admin LiveMap**: mapa en vivo de incidencias."
+            "- **Admin LiveMap**: mapa en vivo de incidencias, pánicos y crowd."
         )

@@ -62,6 +62,7 @@ def build_driver_map(
 def build_admin_live_map(
     incidents: Iterable[dict[str, Any]],
     lines_geometry: dict[str, list[tuple[float, float]]] | None = None,
+    crowd_reports: Iterable[dict[str, Any]] | None = None,
 ) -> folium.Map:
     fmap = folium.Map(location=MADRID_CENTER, zoom_start=11, tiles="OpenStreetMap")
 
@@ -80,19 +81,50 @@ def build_admin_live_map(
     for inc in incidents:
         if inc.get("lat") is None or inc.get("lon") is None:
             continue
+        is_panic = inc.get("kind") == "panic" or inc.get("severity") == "critical"
+        color = "darkred" if is_panic else "red"
+        icon_name = "fire" if is_panic else "warning-sign"
+        title = "🚨 PÁNICO" if is_panic else f"Incidencia #{inc['id']}"
         popup_html = (
-            f"<b>Incidencia #{inc['id']}</b><br>"
+            f"<b>{title} #{inc['id']}</b><br>"
             f"Bus: {inc.get('bus_plate', '-')}<br>"
             f"Línea: {inc.get('line_code', '-')}<br>"
             f"Conductor: {inc.get('driver_name', '-')}<br>"
-            f"<i>{inc.get('description', '')[:120]}</i><br>"
+            f"<i>{inc.get('description', '')[:160]}</i><br>"
             f"<small>{inc.get('created_at', '')}</small>"
         )
         folium.Marker(
             location=(inc["lat"], inc["lon"]),
-            tooltip=f"Incidencia #{inc['id']}",
+            tooltip=title,
             popup=folium.Popup(popup_html, max_width=320),
-            icon=folium.Icon(color="red", icon="warning-sign"),
+            icon=folium.Icon(color=color, icon=icon_name),
         ).add_to(fmap)
+        if is_panic:
+            # Halo pulsante visual: círculo rojo extra.
+            folium.Circle(
+                location=(inc["lat"], inc["lon"]),
+                radius=250,
+                color="#B00020",
+                fill=True,
+                fill_opacity=0.15,
+            ).add_to(fmap)
+
+    if crowd_reports:
+        for cr in crowd_reports:
+            popup_html = (
+                f"<b>{cr.get('label', cr['category'])}</b><br>"
+                f"Severidad: {cr.get('severity', '-')}<br>"
+                f"Reporta: {cr.get('reporter', '-')}<br>"
+                f"Línea: {cr.get('line', '-')}<br>"
+                f"Confirmaciones: {cr.get('confirmations', 0)} · "
+                f"Descartes: {cr.get('downvotes', 0)}<br>"
+                f"<i>{(cr.get('note') or '')[:140]}</i>"
+            )
+            folium.Marker(
+                location=(cr["lat"], cr["lon"]),
+                tooltip=f"{cr.get('label', cr['category'])} · {cr.get('severity', '-')}",
+                popup=folium.Popup(popup_html, max_width=320),
+                icon=folium.Icon(color=cr.get("map_color", "blue"), icon="info-sign"),
+            ).add_to(fmap)
 
     return fmap

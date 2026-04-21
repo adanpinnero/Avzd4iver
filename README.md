@@ -42,7 +42,22 @@ streamlit run app.py
 ## Estructura
 
 - `app.py` — login y landing.
-- `pages/` — páginas Streamlit (driver / admin).
+- `pages/` — páginas Streamlit:
+  - `1_Driver_Turno.py` — plan diario, briefing hablado, handoff, historial.
+  - `2_Driver_Asistente.py` — radar crowdsourced, voz, protocolos paso a paso, pánico + dead-man.
+  - `3_Driver_Incidencia.py` — incidencia formal con IA + audio.
+  - `4_Admin_Asignaciones.py` — asignaciones editables.
+  - `5_Admin_LiveMap.py` — mapa en vivo con pánicos, incidencias y crowd.
 - `db/` — modelos SQLModel, sesión, seed.
-- `services/` — mocks de DGT, EMT, AEMET, eventos + cliente LLM + TTS.
+- `services/` — mocks DGT/EMT/AEMET/eventos + LLM + TTS + crowd + voice + protocols.
 - `ui/` — helpers de mapas, timeline, alertas, PDF, auth.
+
+## Transcripción de voz (opcional)
+
+La pestaña Voz del asistente graba con `st.audio_input`. Para transcribir audio:
+
+```bash
+export OPENAI_API_KEY=sk-...
+```
+
+Si no hay clave, escribe el comando en el campo de texto como fallback.
