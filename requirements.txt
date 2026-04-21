@@ -1,0 +1,12 @@
+streamlit==1.39.0
+sqlmodel==0.0.22
+streamlit-folium==0.22.0
+folium==0.17.0
+plotly==5.24.1
+pandas==2.2.3
+fpdf2==2.8.1
+gTTS==2.5.3
+openai==1.54.3
+streamlit-autorefresh==1.0.1
+streamlit-geolocation==0.0.10
+python-dateutil==2.9.0
