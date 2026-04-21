@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+fleet.db
+fleet.db-journal
+uploads/
+tts_cache/
+.streamlit/secrets.toml
+*.mp3
+.DS_Store
+.idea/
+.vscode/
