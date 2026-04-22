@@ -12,13 +12,19 @@ from db.session import get_session
 from services.llm import emergency_protocol
 from services.tts import synthesize
 from ui.auth import require_role
+from ui.components import page_header
+from ui.theme import inject_css
 
 st.set_page_config(page_title="Reportar incidencia", page_icon="🚨", layout="centered")
+inject_css()
 
 user = require_role("driver")
 
-st.title("🚨 Reportar incidencia")
-st.caption("Envía una incidencia y recibe un protocolo de actuación inmediato con audio.")
+page_header(
+    "Reportar incidencia",
+    "Envía una incidencia y recibe un protocolo de actuación inmediato con audio.",
+    icon="🚨",
+)
 
 UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads" / "incidents"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

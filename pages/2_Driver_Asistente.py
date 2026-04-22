@@ -15,13 +15,19 @@ from services.protocols import get_protocol, list_protocols
 from services.tts import synthesize
 from services.voice import parse_intent, short_ack, transcribe
 from ui.auth import require_role
+from ui.components import page_header
+from ui.theme import inject_css
 
 st.set_page_config(page_title="Asistente", page_icon="🎧", layout="wide")
+inject_css()
 
 user = require_role("driver")
 
-st.title("🎧 Asistente del conductor")
-st.caption("Radar de compañeros, voz, protocolos y pánico. Aséptico y útil.")
+page_header(
+    "Asistente del conductor",
+    "Radar de compañeros, voz, protocolos guiados y pánico.",
+    icon="🎧",
+)
 
 # ─── Contexto del turno ─────────────────────────────────────────────────────
 with get_session() as s:
