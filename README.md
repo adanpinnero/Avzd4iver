@@ -18,14 +18,21 @@ la primera vez que se arranca la app.
 
 ## Credenciales demo
 
-| Rol    | Usuario | Contraseña |
-|--------|---------|------------|
-| Admin  | `admin` | `admin`    |
-| Driver | `juan`  | `1234`     |
-| Driver | `maria` | `1234`     |
-| Driver | `pedro` | `1234`     |
-| Driver | `lucia` | `1234`     |
-| Driver | `carlos`| `1234`     |
+| Rol    | Usuario   | Contraseña |
+|--------|-----------|------------|
+| Admin  | `admin`   | `admin`    |
+| Admin  | `sofia`   | `admin`    |
+| Driver | `juan`    | `1234`     |
+| Driver | `maria`   | `1234`     |
+| Driver | `pedro`   | `1234`     |
+| Driver | `lucia`   | `1234`     |
+| Driver | `carlos`  | `1234`     |
+
+La semilla crea **2 admins** y **20 conductores** en total (todos los
+conductores con contraseña `1234`). Lista completa de usernames en
+`db/seed.py`. Flota: **30 autobuses** (15 Mercedes + 15 Irizar, mezcla de
+estándar/articulado/eléctrico). Líneas EMT: 1, 5, 14, 27, 34, 52, 74, 150,
+N1, N26.
 
 ## LLM real (opcional)
 
