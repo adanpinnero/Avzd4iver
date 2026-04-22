@@ -4,6 +4,8 @@ import streamlit as st
 
 from db.session import init_db
 from ui.auth import current_user, login_form, logout_button
+from ui.components import page_header
+from ui.theme import inject_css
 
 st.set_page_config(
     page_title="Flota EMT Madrid",
@@ -11,11 +13,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+inject_css()
 
 init_db()
 
-st.title("🚌 Gestión de Flota — Autobuses Madrid")
-st.caption("Plataforma interna de planificación de rutas y gestión de incidencias.")
+page_header(
+    "Gestión de Flota — Autobuses Madrid",
+    "Planificación de turnos, incidencias y datos de ciudad en tiempo real.",
+    icon="🚌",
+)
 
 user = current_user()
 
@@ -33,7 +39,7 @@ else:
     if user.role == "driver":
         st.markdown(
             "Usa el menú lateral para acceder a:\n"
-            "- **Driver Turno**: plan diario con briefing hablado y handoff.\n"
+            "- **Driver Turno**: plan diario con datos DGT + ciudad + briefing hablado.\n"
             "- **Driver Asistente**: radar crowd, voz, protocolos guiados y pánico.\n"
             "- **Driver Incidencia**: reporta una incidencia con asistencia IA."
         )
@@ -41,5 +47,6 @@ else:
         st.markdown(
             "Usa el menú lateral para acceder a:\n"
             "- **Admin Asignaciones**: gestiona asignaciones conductor/bus/línea.\n"
-            "- **Admin LiveMap**: mapa en vivo de incidencias, pánicos y crowd."
+            "- **Admin LiveMap**: mapa en vivo con capas DGT, Madrid, crowd y AQI.\n"
+            "- **Admin Info Ciudad**: dashboard datos reales DGT + Ayto. Madrid."
         )

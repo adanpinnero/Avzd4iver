@@ -9,13 +9,19 @@ from sqlmodel import select
 from db.models import Assignment, Bus, Line, User
 from db.session import get_session
 from ui.auth import require_role
+from ui.components import page_header
+from ui.theme import inject_css
 
 st.set_page_config(page_title="Asignaciones", page_icon="📋", layout="wide")
+inject_css()
 
 require_role("admin")
 
-st.title("📋 Asignaciones del día")
-st.caption("Edita las filas y pulsa **Guardar cambios** para persistir.")
+page_header(
+    "Asignaciones del día",
+    "Edita las filas y pulsa **Guardar cambios** para persistir.",
+    icon="📋",
+)
 
 shift_date = st.date_input("Fecha", value=date.today())
 

@@ -46,18 +46,38 @@ export OPENROUTER_MODEL="anthropic/claude-haiku-4.5"
 streamlit run app.py
 ```
 
+## Datos reales (DGT + Ayuntamiento Madrid)
+
+La app consume datos abiertos en tiempo real, con **fallback automático a
+mock determinista** si la red falla o el formato cambia. No requiere
+claves para los endpoints públicos.
+
+| Fuente                    | Endpoint                                                                                     | Cacheo |
+|---------------------------|----------------------------------------------------------------------------------------------|--------|
+| Incidencias DGT (DATEX2)  | `https://infocar.dgt.es/datex2/dgt/SituationPublication/all/contenido.xml`                   | 5 min  |
+| Obras e incidencias Ayto. | `https://datos.madrid.es/egob/catalogo/208627-0-transporte-incidencias-obras.json`           | 5 min  |
+| Calidad del aire Madrid   | `https://datos.madrid.es/egob/catalogo/212531-10515086-calidad-aire-tiempo-real.csv`         | 5 min  |
+| Puntos negros DGT         | Snapshot embebido `data/dgt_puntos_negros_madrid.csv`                                        | —      |
+
+El `plan_builder` filtra incidencias DGT y obras Ayto. a ≤1.5 km de la
+ruta del conductor y las suma a las alertas. La estación de calidad del
+aire más cercana a la ruta se muestra como banner en **Driver Turno**.
+
 ## Estructura
 
 - `app.py` — login y landing.
 - `pages/` — páginas Streamlit:
-  - `1_Driver_Turno.py` — plan diario, briefing hablado, handoff, historial.
-  - `2_Driver_Asistente.py` — radar crowdsourced, voz, protocolos paso a paso, pánico + dead-man.
+  - `1_Driver_Turno.py` — plan con datos DGT/Madrid, banner AQI, briefing hablado, handoff, historial.
+  - `2_Driver_Asistente.py` — radar crowd, voz, protocolos paso a paso, pánico + dead-man.
   - `3_Driver_Incidencia.py` — incidencia formal con IA + audio.
   - `4_Admin_Asignaciones.py` — asignaciones editables.
-  - `5_Admin_LiveMap.py` — mapa en vivo con pánicos, incidencias y crowd.
+  - `5_Admin_LiveMap.py` — mapa en vivo con 6 capas toggleables (internas, crowd, DGT, obras Madrid, puntos negros, AQI).
+  - `6_Admin_Info_Ciudad.py` — dashboard tráfico + calidad del aire con gráficos Plotly.
 - `db/` — modelos SQLModel, sesión, seed.
-- `services/` — mocks DGT/EMT/AEMET/eventos + LLM + TTS + crowd + voice + protocols.
-- `ui/` — helpers de mapas, timeline, alertas, PDF, auth.
+- `services/` — DGT, Madrid open data, eventos, clima, LLM, TTS, crowd, voice, protocols, plan_builder.
+- `ui/` — theme/CSS, componentes (page_header, kpi_card, aqi_banner…), mapas, timeline, alertas, PDF, auth.
+- `.streamlit/config.toml` — tema branded (paleta EMT rojo).
+- `data/dgt_puntos_negros_madrid.csv` — snapshot open data DGT.
 
 ## Transcripción de voz (opcional)
 
