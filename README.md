@@ -18,14 +18,21 @@ la primera vez que se arranca la app.
 
 ## Credenciales demo
 
-| Rol    | Usuario | Contraseña |
-|--------|---------|------------|
-| Admin  | `admin` | `admin`    |
-| Driver | `juan`  | `1234`     |
-| Driver | `maria` | `1234`     |
-| Driver | `pedro` | `1234`     |
-| Driver | `lucia` | `1234`     |
-| Driver | `carlos`| `1234`     |
+| Rol    | Usuario   | Contraseña |
+|--------|-----------|------------|
+| Admin  | `admin`   | `admin`    |
+| Admin  | `sofia`   | `admin`    |
+| Driver | `juan`    | `1234`     |
+| Driver | `maria`   | `1234`     |
+| Driver | `pedro`   | `1234`     |
+| Driver | `lucia`   | `1234`     |
+| Driver | `carlos`  | `1234`     |
+
+La semilla crea **2 admins** y **20 conductores** en total (todos los
+conductores con contraseña `1234`). Lista completa de usernames en
+`db/seed.py`. Flota: **30 autobuses** (15 Mercedes + 15 Irizar, mezcla de
+estándar/articulado/eléctrico). Líneas EMT: 1, 5, 14, 27, 34, 52, 74, 150,
+N1, N26.
 
 ## LLM real (opcional)
 
@@ -42,7 +49,22 @@ streamlit run app.py
 ## Estructura
 
 - `app.py` — login y landing.
-- `pages/` — páginas Streamlit (driver / admin).
+- `pages/` — páginas Streamlit:
+  - `1_Driver_Turno.py` — plan diario, briefing hablado, handoff, historial.
+  - `2_Driver_Asistente.py` — radar crowdsourced, voz, protocolos paso a paso, pánico + dead-man.
+  - `3_Driver_Incidencia.py` — incidencia formal con IA + audio.
+  - `4_Admin_Asignaciones.py` — asignaciones editables.
+  - `5_Admin_LiveMap.py` — mapa en vivo con pánicos, incidencias y crowd.
 - `db/` — modelos SQLModel, sesión, seed.
-- `services/` — mocks de DGT, EMT, AEMET, eventos + cliente LLM + TTS.
+- `services/` — mocks DGT/EMT/AEMET/eventos + LLM + TTS + crowd + voice + protocols.
 - `ui/` — helpers de mapas, timeline, alertas, PDF, auth.
+
+## Transcripción de voz (opcional)
+
+La pestaña Voz del asistente graba con `st.audio_input`. Para transcribir audio:
+
+```bash
+export OPENAI_API_KEY=sk-...
+```
+
+Si no hay clave, escribe el comando en el campo de texto como fallback.
