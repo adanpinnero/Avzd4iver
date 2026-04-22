@@ -12,16 +12,22 @@ from services import crowd
 from services.plan_builder import build_plan
 from services.tts import synthesize
 from ui.auth import require_role
+from ui.components import aqi_banner, data_source_badge, kpi_card, page_header, severity_badge
 from ui.maps import build_driver_map
 from ui.pdf import render_plan_pdf
+from ui.theme import inject_css
 from ui.timeline import render_timeline_figure
 
 st.set_page_config(page_title="Turno del conductor", page_icon="🗺️", layout="wide")
+inject_css()
 
 user = require_role("driver")
 
-st.title("🗺️ Configuración de turno")
-st.caption("Selecciona tu asignación y genera tu plan personalizado.")
+page_header(
+    "Configuración de turno",
+    "Plan personalizado con datos reales de tráfico DGT y ciudad.",
+    icon="🗺️",
+)
 
 with get_session() as s:
     buses = s.exec(select(Bus).order_by(Bus.plate)).all()
@@ -182,8 +188,35 @@ st.subheader(
     f"Plan — Línea {plan.line.code} · {plan.bus.plate} · {plan.shift_date.strftime('%d/%m/%Y')}"
 )
 
-tab_timeline, tab_map, tab_alerts, tab_meta = st.tabs(
-    ["🕒 Timeline", "🗺️ Mapa", "⚠️ Alertas", "📊 Detalles"]
+# ─── Banner calidad del aire (estación más cercana a la ruta) ─────────────
+if plan.aqi:
+    aqi_banner(plan.aqi)
+
+# ─── Badges de fuentes ────────────────────────────────────────────────────
+src_cols = st.columns(4)
+with src_cols[0]:
+    data_source_badge(
+        "DGT DATEX2",
+        plan.generated_at,
+        is_mock=any("mock" in i.get("source", "") for i in plan.dgt_incidents[:1]),
+    )
+with src_cols[1]:
+    data_source_badge(
+        "Ayto. Madrid",
+        plan.generated_at,
+        is_mock=any("mock" in i.get("source", "") for i in plan.road_works[:1]),
+    )
+with src_cols[2]:
+    data_source_badge(
+        "Calidad aire",
+        plan.generated_at,
+        is_mock=bool(plan.aqi) and "mock" in (plan.aqi.get("source", "")),
+    )
+with src_cols[3]:
+    data_source_badge("Interno", plan.generated_at)
+
+tab_timeline, tab_map, tab_alerts, tab_trafico, tab_meta = st.tabs(
+    ["🕒 Timeline", "🗺️ Mapa", "⚠️ Alertas", "🚧 Tráfico ciudad", "📊 Detalles"]
 )
 
 with tab_timeline:
@@ -208,13 +241,49 @@ with tab_alerts:
         else:
             st.info(msg)
 
+with tab_trafico:
+    if not plan.dgt_incidents and not plan.road_works and not plan.black_spots:
+        st.success("No se detectan incidencias de tráfico cerca de esta ruta en este momento.")
+    if plan.dgt_incidents:
+        st.markdown(f"**🛣️ DGT tiempo real · {len(plan.dgt_incidents)} cerca de la ruta**")
+        for inc in plan.dgt_incidents[:10]:
+            st.markdown(
+                f"- {severity_badge(inc['severity'])} "
+                f"**{inc['tipo'].title()}** · {inc.get('carretera', '')} "
+                f"km {inc.get('pk', '')} · a **{int(inc['distance_m'])}m** — "
+                f"{inc.get('descripcion', '')[:140]}",
+                unsafe_allow_html=True,
+            )
+    if plan.road_works:
+        st.markdown(f"**🏗️ Obras Ayto. Madrid · {len(plan.road_works)} cerca**")
+        for rw in plan.road_works[:10]:
+            st.markdown(
+                f"- {severity_badge(rw['severity'])} "
+                f"**{rw['titulo']}** · distrito {rw.get('distrito', '-')} · "
+                f"a **{int(rw['distance_m'])}m**",
+                unsafe_allow_html=True,
+            )
+    dgt_pn = [s for s in plan.black_spots if s.get("source") == "dgt"]
+    if dgt_pn:
+        st.markdown(f"**⚫ Puntos negros DGT cerca · {len(dgt_pn)}**")
+        for sp in dgt_pn[:10]:
+            st.markdown(
+                f"- {severity_badge(sp.get('severity', 'media'))} "
+                f"{sp.get('reason', '')}",
+                unsafe_allow_html=True,
+            )
+
 with tab_meta:
     ws = plan.weather_summary
     cols = st.columns(4)
-    cols[0].metric("Tª mínima", f"{ws.get('min_temp', '?')}ºC")
-    cols[1].metric("Tª máxima", f"{ws.get('max_temp', '?')}ºC")
-    cols[2].metric("Lluvia acumulada", f"{ws.get('total_rain_mm', 0)} mm")
-    cols[3].metric("Paradas", len(plan.stops))
+    with cols[0]:
+        kpi_card("Tª mínima", f"{ws.get('min_temp', '?')}ºC", color="accent")
+    with cols[1]:
+        kpi_card("Tª máxima", f"{ws.get('max_temp', '?')}ºC", color="accent")
+    with cols[2]:
+        kpi_card("Lluvia acumulada", f"{ws.get('total_rain_mm', 0)} mm", color="primary")
+    with cols[3]:
+        kpi_card("Paradas", len(plan.stops), color="ok")
     st.caption(f"Condiciones previstas: {ws.get('conditions', '-')}")
     if plan.events:
         st.markdown("**Eventos en la ciudad hoy:**")
